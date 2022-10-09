@@ -1,8 +1,6 @@
 import types
 from functools import cached_property
 
-function = type(lambda: None)
-
 
 class overriden:
     def __init__(self, target_cls):
@@ -27,13 +25,13 @@ class overriden:
 
 class ReplacementDesc:
 
-    def __init__(self, replacement, target, condition: function=None):
+    def __init__(self, replacement, target, condition_fn=None):
         self.target = target
         self.replacement = replacement
-        self.condition = condition
+        self.condition_fn = condition_fn
 
     def __get__(self, instance, owner):
-        if not self.condition or self.condition():
+        if not self.condition_fn or self.condition_fn():
             return self.replacement.__get__(instance, owner)
         if not self.target:
             raise AttributeError
