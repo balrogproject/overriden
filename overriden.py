@@ -39,11 +39,16 @@ class ReplacementDesc:
 
 if __name__ == '__main__':
     class C:
-        def f(self):
-            return 1
+        x = 1
 
+        @classmethod
+        def f(cls):
+            return cls.x + 1
+    #
     class C1(overriden(C)):
-        def f(self):
-            return C1.f(self) + 1
+        @classmethod
+        def f(cls):
+            f = C1.f.__get__(None, cls)
+            return f() + 1
 
-    assert C().f() == 2
+    assert C.f() == 3
