@@ -1,3 +1,4 @@
+import types
 from functools import cached_property
 
 function = type(lambda: None)
@@ -7,24 +8,19 @@ class overriden:
     def __init__(self, target_cls):
         self.target_cls = target_cls
 
-    old_ns: dict
-    new_ns: dict
-
     @cached_property
     def meta(self):
         class Meta(type):
             def __new__(mcls, name, bases, new_ns):
-                self.new_ns = new_ns
-                old_ns = self.old_ns = {}
+                old_ns = {}
                 for key, val in new_ns.items():
                     if key in ('__module__', '__qualname__'):
                         continue
                     old_val = self.target_cls.__dict__.get(key)
                     if old_val is not None:
                         old_ns[key] = old_val
-                    setattr(self, key, old_val)
                     setattr(self.target_cls, key, ReplacementDesc(val, old_val))
-                return self
+                return types.SimpleNamespace(**old_ns)
 
         return Meta
 
@@ -55,5 +51,4 @@ if __name__ == '__main__':
         def f(self):
             return 2
 
-    assert C2 is C1
     assert C().f() == 2
