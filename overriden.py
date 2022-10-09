@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
     C1 = overriden(C)
 
-    class C2(metaclass=C1.meta):
+    class C1(metaclass=C1.meta):
         def f(self):
-            return 2
+            return C1.f(self) + 1
 
     assert C().f() == 2
