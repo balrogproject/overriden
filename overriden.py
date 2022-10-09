@@ -3,21 +3,6 @@ from functools import cached_property
 function = type(lambda: None)
 
 
-class ReplacementDesc:
-
-    def __init__(self, replacement, target, condition: function=None):
-        self.target = target
-        self.replacement = replacement
-        self.condition = condition
-
-    def __get__(self, instance, owner):
-        if not self.condition or self.condition():
-            return self.replacement.__get__(instance, owner)
-        if not self.target:
-            raise AttributeError
-        return self.target.__get__(instance, owner)
-
-
 class overriden:
     def __init__(self, target_cls):
         self.target_cls = target_cls
@@ -42,6 +27,21 @@ class overriden:
                 return self
 
         return Meta
+
+
+class ReplacementDesc:
+
+    def __init__(self, replacement, target, condition: function=None):
+        self.target = target
+        self.replacement = replacement
+        self.condition = condition
+
+    def __get__(self, instance, owner):
+        if not self.condition or self.condition():
+            return self.replacement.__get__(instance, owner)
+        if not self.target:
+            raise AttributeError
+        return self.target.__get__(instance, owner)
 
 
 if __name__ == '__main__':
