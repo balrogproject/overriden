@@ -1,26 +1,25 @@
 import types
-from functools import cached_property
 
 
-class overriden:
-    def __init__(self, target_cls):
-        self.target_cls = target_cls
+def overriden(target_cls):
+    class Meta(type):
+        def __new__(mcls, name, bases, new_ns):
+            if not bases:
+                return super().__new__(mcls, name, bases, new_ns)
+            old_ns = {'_overriden_class': target_cls}
+            for key, val in new_ns.items():
+                if key in ('__module__', '__qualname__'):
+                    continue
+                old_val = target_cls.__dict__.get(key)
+                if old_val is not None:
+                    old_ns[key] = old_val
+                setattr(target_cls, key, ReplacementDesc(val, old_val))
+            return types.SimpleNamespace(**old_ns)
 
-    @cached_property
-    def meta(self):
-        class Meta(type):
-            def __new__(mcls, name, bases, new_ns):
-                old_ns = {}
-                for key, val in new_ns.items():
-                    if key in ('__module__', '__qualname__'):
-                        continue
-                    old_val = self.target_cls.__dict__.get(key)
-                    if old_val is not None:
-                        old_ns[key] = old_val
-                    setattr(self.target_cls, key, ReplacementDesc(val, old_val))
-                return types.SimpleNamespace(**old_ns)
+    class ExtendMe(metaclass=Meta):
+        pass
 
-        return Meta
+    return ExtendMe
 
 
 class ReplacementDesc:
@@ -43,9 +42,7 @@ if __name__ == '__main__':
         def f(self):
             return 1
 
-    C1 = overriden(C)
-
-    class C1(metaclass=C1.meta):
+    class C1(overriden(C)):
         def f(self):
             return C1.f(self) + 1
 
