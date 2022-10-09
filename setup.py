@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(name="overriden",
-      version="0.1.0",
+      version="0.1.1",
       author="Vitalii Abetkin",
       author_email="abvit89s@gmail.ru",
       py_modules=['overriden'],
