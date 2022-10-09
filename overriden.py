@@ -6,7 +6,7 @@ def overriden(target_cls):
         def __new__(mcls, name, bases, new_ns):
             if not bases:
                 return super().__new__(mcls, name, bases, new_ns)
-            old_ns = {'_overriden_class': target_cls}
+            old_ns = {}
             for key, val in new_ns.items():
                 if key in ('__module__', '__qualname__'):
                     continue
