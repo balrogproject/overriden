@@ -1,7 +1,7 @@
 import types
 
 
-def overriden(target_cls):
+def override(target_cls, replacement_condition_fn=None):
     class Meta(type):
         def __new__(mcls, name, bases, new_ns):
             if not bases:
@@ -13,7 +13,9 @@ def overriden(target_cls):
                 old_val = target_cls.__dict__.get(key)
                 if old_val is not None:
                     old_ns[key] = old_val
-                setattr(target_cls, key, ReplacementDesc(val, old_val))
+                replacement = ReplacementDesc(val, old_val, replacement_condition_fn)
+                replacement.name = key
+                setattr(target_cls, key, replacement)
             return types.SimpleNamespace(**old_ns)
 
     class ExtendMe(metaclass=Meta):
@@ -31,10 +33,20 @@ class ReplacementDesc:
 
     def __get__(self, instance, owner):
         if not self.condition_fn or self.condition_fn():
-            return self.replacement.__get__(instance, owner)
+            try:
+                self.replacement.__get__
+            except AttributeError:
+                return self.replacement
+            else:
+                return self.replacement.__get__(instance, owner)
         if not self.target:
             raise AttributeError
-        return self.target.__get__(instance, owner)
+        try:
+            self.target.__get__
+        except AttributeError:
+            return self.target
+        else:
+            return self.target.__get__(instance, owner)
 
 
 if __name__ == '__main__':
@@ -45,7 +57,7 @@ if __name__ == '__main__':
         def f(cls):
             return cls.x + 1
     #
-    class C1(overriden(C)):
+    class C1(override(C)):
         @classmethod
         def f(cls):
             f = C1.f.__get__(None, cls)
